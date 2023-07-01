@@ -8,6 +8,12 @@ export const router = {
     routes: {},
 
     /**
+     * An array to store all registered middleware functions
+     * @type {Array}
+     */
+    middlewares: [],
+
+    /**
      * Register a handler for a GET request to a specific path
      * @param {string} path - The path for the route
      * @param {function} handler - The function to handle the request
@@ -44,24 +50,36 @@ export const router = {
     },
 
     /**
+     * Register a middleware function that will be run on every request before the route handler
+     * @param {function} middleware - The middleware function to register
+     */
+    use(middleware) {
+        this.middlewares.push(middleware)
+    },
+
+    /**
      * Route an incoming request to the appropriate handler
      * @param {Object} req - The incoming request object
      * @param {Object} res - The response object
      */
     route(req, res) {
-        const parsedUrl = url.parse(req.url, true)
+        const parsedUrl = url.parse(req.url, true);
         const path = parsedUrl.pathname
         const method = req.method
 
         const handler = this.routes[method + path]
 
+        for (const middleware of this.middlewares) {
+            middleware(req, res)
+        }
+
         if (handler) {
             handler(req, res)
         } else {
             res.writeHead(404, { 'Content-Type': 'text/plain' })
-            res.end('Not Found\n')
+            res.end('Sorry the requested page not Found\n')
         }
     }
-};
+}
 
 

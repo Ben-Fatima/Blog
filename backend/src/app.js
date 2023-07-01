@@ -1,8 +1,11 @@
 import http from 'http';
 import {router} from "./router.js";
 
-const server = http.createServer((req, res) => {
+const app = http.createServer((req, res) => {
     router.route(req, res);
+    router.use((req, res) => {
+        console.log(`Received a ${req.method} request for ${req.url}`);
+    });
 });
 
 router.get('/', (req, res) => {
@@ -10,6 +13,10 @@ router.get('/', (req, res) => {
     res.end('Hello, World!\n');
 });
 
-server.listen(3000, () => {
+router.get('/home', (req, res)=>{
+    res.end('Home page!\n');
+})
+
+app.listen(3000, () => {
     console.log('Server listening on port 3000...');
 });
