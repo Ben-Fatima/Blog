@@ -10,7 +10,9 @@
   "author": "fatima zahra Benhammou",
   "license": "ISC",
   "dependencies": {
+    "bcrypt": "^5.1.0",
     "dotenv": "^16.3.1",
+    "joi": "^17.9.2",
     "pg": "^8.11.1"
   }
 }
