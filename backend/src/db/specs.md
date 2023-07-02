@@ -14,7 +14,6 @@ The primary data structures/entities to be managed include:
 - `Posts`
 - `Comments`
 - `Categories`
-- `Tags`
 
 ## Objectives
 
