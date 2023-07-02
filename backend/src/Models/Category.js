@@ -14,8 +14,13 @@ export class Category {
     static async getCategories() {
         const queryBuilder = new QueryBuilder()
         const query = queryBuilder.select('categories')
-        const result = await pool.query(query.text, query.values)
-        return result.rows.map(row => new Category(row))
+        try {
+            const result = await pool.query(query.text, query.values)
+            return result.rows.map(row => new Category(row))
+        } catch (err) {
+            console.error(err)
+            throw err
+        }
     }
 
     /**
@@ -26,46 +31,75 @@ export class Category {
     static async getCategoryById(id) {
         const queryBuilder = new QueryBuilder()
         const query = queryBuilder.select('categories', ['*'], {id})
-        const result = await pool.query(query.text, query.values)
-        return new Category(result.rows[0])
+        try {
+            const result = await pool.query(query.text, query.values)
+            return new Category(result.rows[0])
+        } catch (err) {
+            console.error(err)
+            throw err
+        }
     }
 
     /**
      * Inserts the current category instance into the database.
-     * @returns {Promise<void>}
+     * @returns {Promise<Category>} The new category.
      */
     async addCategory() {
+        if (!this.name || typeof this.name !== 'string') {
+            throw new Error('Invalid name for category.')
+        }
         const queryBuilder = new QueryBuilder()
         const query = queryBuilder.insert('categories', {
             name: this.name,
         })
-        await pool.query(query.text, query.values)
+        try {
+            const result = await pool.query(query.text, query.values)
+            this.id = result.rows[0].id
+            return this
+        } catch (err) {
+            console.error(err)
+            throw err
+        }
     }
 
     /**
      * Updates the current category instance in the database.
-     * @returns {Promise<void>}
+     * @returns {Promise<boolean>} Whether the update was successful.
      */
     async update() {
+        if (!this.name || typeof this.name !== 'string') {
+            throw new Error('Invalid name for category.')
+        }
         const queryBuilder = new QueryBuilder()
         const query = queryBuilder.update('categories', {
             name: this.name,
         }, {
             id: this.id,
         })
-        await pool.query(query.text, query.values)
+        try {
+            const result = await pool.query(query.text, query.values)
+            return result.rowCount > 0
+        } catch (err) {
+            console.error(err)
+            throw err
+        }
     }
 
     /**
      * Deletes the current category instance in the database.
-     * @returns {Promise<void>}
+     * @returns {Promise<boolean>} Whether the deletion was successful.
      */
     async delete() {
         const queryBuilder = new QueryBuilder()
         const query = queryBuilder.delete('categories', {
             id: this.id,
         })
-        await pool.query(query.text, query.values)
+        try {
+            const result = await pool.query(query.text, query.values)
+            return result.rowCount > 0
+        } catch (err) {
+            console.error(err)
+            throw err
+        }
     }
-
 }

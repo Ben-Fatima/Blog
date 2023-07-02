@@ -7,8 +7,8 @@ export class Comment {
     constructor(data) {
         this.id = data.id
         this.content = data.content
-        this.user_id = data.user_id
-        this.post_id = data.post_id
+        this.userId = data.user_id
+        this.postId = data.post_id
     }
 
     /**
@@ -17,7 +17,7 @@ export class Comment {
      */
     async getUser() {
         const queryBuilder = new QueryBuilder()
-        const query = queryBuilder.select('users', ['*'], {id: this.user_id})
+        const query = queryBuilder.select('users', ['*'], {id: this.userId})
         const result = await pool.query(query.text, query.values)
         return new User(result.rows[0])
     }
@@ -28,7 +28,7 @@ export class Comment {
      */
     async getPost() {
         const queryBuilder = new QueryBuilder()
-        const query = queryBuilder.select('posts', ['*'], {id: this.post_id})
+        const query = queryBuilder.select('posts', ['*'], {id: this.postId})
         const result = await pool.query(query.text, query.values)
         return new Post(result.rows[0])
     }
@@ -41,10 +41,11 @@ export class Comment {
         const queryBuilder = new QueryBuilder()
         const query = queryBuilder.insert('comments', {
             content: this.content,
-            user_id: this.user_id,
-            post_id: this.post_id
+            user_id: this.userId,
+            post_id: this.postId
         })
-        await pool.query(query.text, query.values)
+        const result = await pool.query(query.text, query.values)
+        this.id = result.rows[0].id
     }
 
     /**
@@ -55,11 +56,11 @@ export class Comment {
         const queryBuilder = new QueryBuilder()
         const query = queryBuilder.update('comments', {
             content: this.content,
-            user_id: this.user_id,
-            post_id: this.post_id
+            user_id: this.userId,
+            post_id: this.postId
         }, {
             id: this.id,
-        });
+        })
         await pool.query(query.text, query.values)
     }
 
@@ -71,7 +72,11 @@ export class Comment {
         const queryBuilder = new QueryBuilder()
         const query = queryBuilder.delete('comments', {
             id: this.id,
-        });
+        })
         await pool.query(query.text, query.values)
+        this.id = null;
+        this.content = null;
+        this.userId = null;
+        this.postId = null;
     }
 }

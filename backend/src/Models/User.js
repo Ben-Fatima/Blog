@@ -38,13 +38,14 @@ export class User {
      * @returns {Promise<void>}
      */
     async addUser() {
-        const queryBuilder = new QueryBuilder();
+        const queryBuilder = new QueryBuilder()
         const query = queryBuilder.insert('users', {
             name: this.name,
             email: this.email,
             bio: this.bio
         })
-        await pool.query(query.text, query.values)
+        const result = await pool.query(query.text, query.values)
+        this.id = result.rows[0].id
     }
 
     /**
@@ -73,6 +74,10 @@ export class User {
             id: this.id,
         });
         await pool.query(query.text, query.values)
+        this.id = null;
+        this.name = null;
+        this.email = null;
+        this.bio = null;
     }
 
     /**
@@ -81,7 +86,7 @@ export class User {
      */
     async getAllPosts() {
         const queryBuilder = new QueryBuilder();
-        const query = queryBuilder.select('posts', ['*'], { user_id: this.id });
+        const query = queryBuilder.select('posts', ['*'], { userId: this.id });
         const result = await pool.query(query.text, query.values);
         return result.rows.map(row => new Post(row));
     }
@@ -94,7 +99,7 @@ export class User {
      */
     async getPostById(postId) {
         const queryBuilder = new QueryBuilder();
-        const query = queryBuilder.select('posts', ['*'], { id: postId, user_id: this.id });
+        const query = queryBuilder.select('posts', ['*'], { id: postId, userId: this.id }); // Adjusted to 'userId'
         const result = await pool.query(query.text, query.values);
         if(result.rows.length > 0){
             return new Post(result.rows[0]);

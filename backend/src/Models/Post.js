@@ -9,7 +9,7 @@ export class Post {
         this.title = data.title
         this.body = data.body
         this.userId = data.user_id
-        this.categoryId = data.categoryId
+        this.categoryId = data.category_id
     }
 
     /**
@@ -21,9 +21,11 @@ export class Post {
         const query = queryBuilder.insert('posts', {
             title: this.title,
             body: this.body,
-            user_id: this.userId
+            user_id: this.userId,
+            category_id: this.categoryId
         })
-        await pool.query(query.text, query.values)
+        const result = await pool.query(query.text, query.values)
+        this.id = result.rows[0].id  // get the id of the inserted post
     }
 
     /**
@@ -34,7 +36,9 @@ export class Post {
         const queryBuilder = new QueryBuilder()
         const query = queryBuilder.update('posts', {
             title: this.title,
-            body: this.body
+            body: this.body,
+            user_id: this.userId,
+            category_id: this.categoryId
         }, {
             id: this.id
         })
@@ -51,6 +55,11 @@ export class Post {
             id: this.id
         })
         await pool.query(query.text, query.values)
+        this.id = null;
+        this.title = null;
+        this.body = null;
+        this.userId = null;
+        this.categoryId = null;
     }
 
     /**
