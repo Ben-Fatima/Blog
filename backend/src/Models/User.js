@@ -1,12 +1,15 @@
 import {pool} from '../db/connection.js'
 import {QueryBuilder} from '../db/QueryBuilder.js'
 import {Post} from './Post.js'
+import bcrypt from 'bcrypt';
 
+const SALT_ROUNDS = 10;
 export class User {
     constructor(data) {
         this.id = data.id
         this.name = data.name
         this.email = data.email
+        this.password = data.password
         this.bio = data.bio
     }
 
@@ -39,13 +42,16 @@ export class User {
      */
     async addUser() {
         const queryBuilder = new QueryBuilder()
+        const hashedPassword = await bcrypt.hash(this.password, SALT_ROUNDS)
         const query = queryBuilder.insert('users', {
             name: this.name,
             email: this.email,
-            bio: this.bio
+            bio: this.bio,
+            password: hashedPassword
         })
         const result = await pool.query(query.text, query.values)
         this.id = result.rows[0].id
+        this.password = undefined;
     }
 
     /**
@@ -106,5 +112,31 @@ export class User {
         } else {
             throw new Error('Post not found or does not belong to this user');
         }
+    }
+
+    /**
+     *
+     * @param email
+     * @returns {Promise<User>}
+     */
+    static async getUserByEmail(email) {
+        const queryBuilder = new QueryBuilder();
+        const query = queryBuilder.select('users', ['*'], {email});
+        const result = await pool.query(query.text, query.values);
+        if (result.rows.length > 0) {
+            return new User(result.rows[0]);
+        } else {
+            throw new Error('User not found');
+        }
+    }
+
+    /**
+     *
+     * @param password
+     * @param hashedPassword
+     * @returns {Promise<void|*>}
+     */
+    static async validatePassword(password, hashedPassword) {
+        return bcrypt.compare(password, hashedPassword);
     }
 }
